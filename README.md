@@ -40,9 +40,31 @@ RC Webhooks → /webhook endpoint → Event log → State machine → Risk score
 
 ---
 
+## REST API
+
+Once running (`uvicorn churnwall.app:app`), the API is available at `http://localhost:8000/api`:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/subscribers` | List all subscribers (filter by state, risk_min, project) |
+| GET | `/api/subscribers/{customer_id}` | Full subscriber detail + risk score |
+| GET | `/api/subscribers/{customer_id}/recommend` | Retention recommendations |
+| GET | `/api/at-risk` | Subscribers above a risk threshold (default: 60) |
+| POST | `/api/score` | Trigger a full re-score pass |
+
+Interactive docs at `/docs`.
+
 ## Status
 
-🚧 Active development — see [GitHub Issues](https://github.com/zarpa-cat/churnwall/issues) for roadmap
+Phase 1 + 2 complete. Phase 3 (integrations — Resend + Slack) next.
+
+- ✅ Phase 1: State machine + webhook receiver (28 tests)
+- ✅ Phase 2a: Churn risk scorer (24 tests)
+- ✅ Phase 2b: Recommendation engine (25 tests)
+- ✅ Phase 2c: REST API (26 tests)
+- 🔜 Phase 3: Integrations — Resend + Slack
+
+See [GitHub Issues](https://github.com/zarpa-cat/churnwall/issues) for roadmap.
 
 ---
 
