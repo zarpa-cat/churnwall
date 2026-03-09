@@ -29,7 +29,6 @@ from churnwall.integrations.slack import SlackClient
 from churnwall.models import Subscriber, SubscriberState
 from churnwall.recommender import ActionType, Recommendation, Urgency
 
-
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 
@@ -90,7 +89,9 @@ class TestResendClientConfigured:
     @pytest.mark.asyncio
     async def test_send_posts_to_resend_api(self):
         http = _make_http_client(json_body={"id": "resend-abc"})
-        client = ResendClient(api_key="re_test_key", from_email="noreply@test.com", http_client=http)
+        client = ResendClient(
+            api_key="re_test_key", from_email="noreply@test.com", http_client=http
+        )
         msg = EmailMessage(
             to="user@example.com",
             subject="Test subject",
