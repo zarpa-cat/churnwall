@@ -54,15 +54,43 @@ Once running (`uvicorn churnwall.app:app`), the API is available at `http://loca
 
 Interactive docs at `/docs`.
 
+## Integrations (Phase 3)
+
+Churnwall ships with pluggable integrations for email and Slack alerts. Configure via environment variables:
+
+```bash
+# Resend (email)
+RESEND_API_KEY=re_your_key
+RESEND_FROM_EMAIL=churnwall@yourapp.com
+
+# Slack (alerts for immediate-urgency events)
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+```
+
+**Routing logic:**
+- `immediate` urgency → email + Slack alert (billing failures, critical churn risk)
+- `soon` urgency → email only (win-back offers, trial nudges, loyalty discounts)
+- `monitor` urgency → no send (healthy subscribers, passive watch)
+
+Both integrations degrade gracefully — if keys aren't set, sends are skipped with a log warning. Zero-config churnwall still works; you just won't get notifications.
+
+```python
+from churnwall.integrations.dispatcher import IntegrationDispatcher
+from churnwall.settings import settings
+
+dispatcher = IntegrationDispatcher.from_settings(settings, app_name="MyApp")
+await dispatcher.dispatch(subscriber, recommendation, risk_score=87.5)
+```
+
 ## Status
 
-Phase 1 + 2 complete. Phase 3 (integrations — Resend + Slack) next.
+All phases complete.
 
 - ✅ Phase 1: State machine + webhook receiver (28 tests)
 - ✅ Phase 2a: Churn risk scorer (24 tests)
 - ✅ Phase 2b: Recommendation engine (25 tests)
 - ✅ Phase 2c: REST API (26 tests)
-- 🔜 Phase 3: Integrations — Resend + Slack
+- ✅ Phase 3: Integrations — Resend + Slack (35 tests, 138 total)
 
 See [GitHub Issues](https://github.com/zarpa-cat/churnwall/issues) for roadmap.
 
