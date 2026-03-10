@@ -169,9 +169,9 @@ class RetentionRecommender:
                             action=ActionType.SEND_LOYALTY_DISCOUNT,
                             urgency=Urgency.SOON,
                             reason=(
-                            f"Long-term subscriber ({renewals} renewals) shows elevated churn risk."
-                            " A loyalty discount retains them without devaluing."
-                        ),
+                                f"Long-term subscriber ({renewals} renewals) shows elevated"
+                                " churn risk. A loyalty discount retains them without devaluing."
+                            ),
                             metadata={"discount_pct": 15, "channel": "email"},
                             priority=20,
                         )
@@ -182,9 +182,9 @@ class RetentionRecommender:
                             action=ActionType.SEND_ENGAGEMENT_CHECKIN,
                             urgency=Urgency.SOON,
                             reason=(
-                        "Subscriber shows high churn risk."
-                        " An engagement check-in can surface friction or missed value."
-                    ),
+                                "Subscriber shows high churn risk."
+                                " An engagement check-in can surface friction or missed value."
+                            ),
                             metadata={"channel": "email"},
                             priority=25,
                         )

@@ -180,18 +180,14 @@ def recommend(
         if not result.recommendations:
             typer.echo("  No recommendations. Subscriber looks healthy.")
         else:
-            typer.echo(
-                f"  Top {min(top_n, len(result.recommendations))} recommendation(s):\n"
-            )
+            typer.echo(f"  Top {min(top_n, len(result.recommendations))} recommendation(s):\n")
             for i, rec in enumerate(result.recommendations[:top_n], 1):
                 urgency_color = {
                     "immediate": "red",
                     "soon": "yellow",
                     "monitor": "cyan",
                 }.get(rec.urgency.value, "white")
-                urgency_label = typer.style(
-                    f"[{rec.urgency.value}]", fg=urgency_color, bold=True
-                )
+                urgency_label = typer.style(f"[{rec.urgency.value}]", fg=urgency_color, bold=True)
                 typer.echo(f"  {i}. {rec.action.value}  {urgency_label}")
                 typer.echo(f"     {rec.reason}")
                 if rec.metadata:
@@ -223,12 +219,8 @@ def run_score(
         low = sum(1 for _, r in results if r.score < 30)
 
         typer.echo(f"\nScored {len(results)} subscriber(s):")
-        typer.echo(
-            f"  {typer.style('critical', fg='red', bold=True):<20}  {critical}"
-        )
-        typer.echo(
-            f"  {typer.style('high', fg='yellow', bold=True):<20}  {high}"
-        )
+        typer.echo(f"  {typer.style('critical', fg='red', bold=True):<20}  {critical}")
+        typer.echo(f"  {typer.style('high', fg='yellow', bold=True):<20}  {high}")
         typer.echo(f"  {'medium':<12}  {medium}")
         typer.echo(f"  {'low':<12}  {low}\n")
     finally:
@@ -267,8 +259,7 @@ def billing_failures(
 
         typer.echo(f"\nBilling failures in the last {hours}h — {len(subs)} subscriber(s):\n")
         typer.echo(
-            f"{'CUSTOMER_ID':<30} {'STATE':<16} {'FAILURES':>8}  "
-            f"{'RISK':>14}  {'LAST_FAILURE':<16}"
+            f"{'CUSTOMER_ID':<30} {'STATE':<16} {'FAILURES':>8}  {'RISK':>14}  {'LAST_FAILURE':<16}"
         )
         typer.echo("─" * 95)
 

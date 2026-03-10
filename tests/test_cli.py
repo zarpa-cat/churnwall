@@ -90,8 +90,7 @@ def _make_billing_event(session, subscriber: Subscriber, hours_ago: float = 1.0)
 
 
 def test_subscribers_empty(engine, session_factory):
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["subscribers"])
     assert result.exit_code == 0
     assert "No subscribers matched" in result.output
@@ -103,8 +102,7 @@ def test_subscribers_lists_results(engine, session_factory, session):
         session, customer_id="usr_beta", risk_score=40.0, state=SubscriberState.TRIALING
     )
 
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["subscribers"])
 
     assert result.exit_code == 0
@@ -119,8 +117,7 @@ def test_subscribers_filter_state(engine, session_factory, session):
         session, customer_id="usr_churned", state=SubscriberState.CHURNED, risk_score=95.0
     )
 
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["subscribers", "--state", "churned"])
 
     assert result.exit_code == 0
@@ -132,8 +129,7 @@ def test_subscribers_filter_risk_min(engine, session_factory, session):
     _make_subscriber(session, customer_id="usr_high", risk_score=85.0)
     _make_subscriber(session, customer_id="usr_low", risk_score=20.0)
 
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["subscribers", "--risk-min", "70"])
 
     assert result.exit_code == 0
@@ -142,8 +138,7 @@ def test_subscribers_filter_risk_min(engine, session_factory, session):
 
 
 def test_subscribers_invalid_state(engine, session_factory):
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["subscribers", "--state", "nonsense"])
 
     assert result.exit_code == 1
@@ -154,8 +149,7 @@ def test_subscribers_filter_project(engine, session_factory, session):
     _make_subscriber(session, customer_id="usr_proj_a", project_id="proj_a")
     _make_subscriber(session, customer_id="usr_proj_b", project_id="proj_b")
 
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["subscribers", "--project", "proj_a"])
 
     assert result.exit_code == 0
@@ -167,8 +161,7 @@ def test_subscribers_filter_project(engine, session_factory, session):
 
 
 def test_recommend_not_found(engine, session_factory):
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["recommend", "--customer-id", "usr_ghost"])
 
     assert result.exit_code == 1
@@ -184,8 +177,7 @@ def test_recommend_billing_issue(engine, session_factory, session):
         billing_failure_count=2,
     )
 
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["recommend", "--customer-id", "usr_billing"])
 
     assert result.exit_code == 0
@@ -205,8 +197,7 @@ def test_recommend_healthy_subscriber(engine, session_factory, session):
         billing_failure_count=0,
     )
 
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["recommend", "--customer-id", "usr_healthy"])
 
     assert result.exit_code == 0
@@ -217,8 +208,7 @@ def test_recommend_healthy_subscriber(engine, session_factory, session):
 
 
 def test_score_empty_db(engine, session_factory):
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["score"])
 
     assert result.exit_code == 0
@@ -235,8 +225,7 @@ def test_score_runs_and_reports(engine, session_factory, session):
         billing_failure_count=3,
     )
 
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["score"])
 
     assert result.exit_code == 0
@@ -247,8 +236,7 @@ def test_score_runs_and_reports(engine, session_factory, session):
 
 
 def test_cohort_billing_failures_empty(engine, session_factory):
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["cohort", "billing-failures", "--hours", "24"])
 
     assert result.exit_code == 0
@@ -264,8 +252,7 @@ def test_cohort_billing_failures_shows_recent(engine, session_factory, session):
     )
     _make_billing_event(session, sub, hours_ago=5)  # within 48h window
 
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["cohort", "billing-failures", "--hours", "48"])
 
     assert result.exit_code == 0
@@ -282,8 +269,7 @@ def test_cohort_billing_failures_outside_window(engine, session_factory, session
     )
     _make_billing_event(session, sub, hours_ago=72)  # outside 48h window
 
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["cohort", "billing-failures", "--hours", "48"])
 
     assert result.exit_code == 0
@@ -292,18 +278,23 @@ def test_cohort_billing_failures_outside_window(engine, session_factory, session
 
 def test_cohort_billing_failures_project_filter(engine, session_factory, session):
     sub_a = _make_subscriber(
-        session, customer_id="usr_proj_a_bf", project_id="proj_a",
-        state=SubscriberState.BILLING_ISSUE, billing_failure_count=1
+        session,
+        customer_id="usr_proj_a_bf",
+        project_id="proj_a",
+        state=SubscriberState.BILLING_ISSUE,
+        billing_failure_count=1,
     )
     sub_b = _make_subscriber(
-        session, customer_id="usr_proj_b_bf", project_id="proj_b",
-        state=SubscriberState.BILLING_ISSUE, billing_failure_count=1
+        session,
+        customer_id="usr_proj_b_bf",
+        project_id="proj_b",
+        state=SubscriberState.BILLING_ISSUE,
+        billing_failure_count=1,
     )
     _make_billing_event(session, sub_a, hours_ago=2)
     _make_billing_event(session, sub_b, hours_ago=2)
 
-    with patch("churnwall.cli.SessionLocal", session_factory), \
-         patch("churnwall.cli.init_db"):
+    with patch("churnwall.cli.SessionLocal", session_factory), patch("churnwall.cli.init_db"):
         result = runner.invoke(app, ["cohort", "billing-failures", "--project", "proj_a"])
 
     assert result.exit_code == 0

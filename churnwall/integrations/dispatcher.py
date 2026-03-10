@@ -119,16 +119,12 @@ class IntegrationDispatcher:
             email_skipped_reason = (
                 f"app_user_id '{recipient}' is not a valid email address; skipping email"
             )
-            logger.warning(
-                "churnwall.dispatcher: %s — %s", customer_id, email_skipped_reason
-            )
+            logger.warning("churnwall.dispatcher: %s — %s", customer_id, email_skipped_reason)
             recipient = None
 
         # ── MONITOR → no-op ──────────────────────────────────────────────────
         if urgency == Urgency.MONITOR:
-            logger.debug(
-                "churnwall.dispatcher: %s — MONITOR urgency, no send", customer_id
-            )
+            logger.debug("churnwall.dispatcher: %s — MONITOR urgency, no send", customer_id)
             return DispatchResult(
                 customer_id=customer_id,
                 action=action.value,
@@ -207,9 +203,7 @@ class IntegrationDispatcher:
                 result = await self._resend.send(message)
                 email_sent = bool(result)
             except Exception as exc:
-                logger.error(
-                    "churnwall.dispatcher: email send failed for %s: %s", customer_id, exc
-                )
+                logger.error("churnwall.dispatcher: email send failed for %s: %s", customer_id, exc)
 
         # ── Send Slack alert (immediate only) ─────────────────────────────────
         if urgency == Urgency.IMMEDIATE:

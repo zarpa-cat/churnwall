@@ -209,10 +209,7 @@ def at_risk_subscribers(
     session: Session = Depends(get_session),
 ) -> list[SubscriberSummary]:
     """List subscribers with risk score >= threshold, ordered by highest risk first."""
-    q = (
-        session.query(Subscriber)
-        .filter(Subscriber.risk_score >= threshold)
-    )
+    q = session.query(Subscriber).filter(Subscriber.risk_score >= threshold)
     if project_id:
         q = q.filter(Subscriber.project_id == project_id)
 

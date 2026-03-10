@@ -178,15 +178,11 @@ class TestEmailTemplates:
         assert "15%" in msg.text
 
     def test_loyalty_discount_shows_tenure(self):
-        msg = loyalty_discount(
-            to="u@e.com", customer_id="usr_1", discount_pct=20, renewal_count=12
-        )
+        msg = loyalty_discount(to="u@e.com", customer_id="usr_1", discount_pct=20, renewal_count=12)
         assert "12 months" in msg.text
 
     def test_loyalty_discount_singular_month(self):
-        msg = loyalty_discount(
-            to="u@e.com", customer_id="usr_1", discount_pct=20, renewal_count=1
-        )
+        msg = loyalty_discount(to="u@e.com", customer_id="usr_1", discount_pct=20, renewal_count=1)
         assert "1 month" in msg.text
         assert "months" not in msg.text
 
@@ -209,9 +205,7 @@ class TestSlackClientConfigured:
     async def test_post_sends_to_webhook_url(self):
         http = _make_http_client(json_body={})
         http.post.return_value.text = "ok"
-        client = SlackClient(
-            webhook_url="https://hooks.slack.com/services/test", http_client=http
-        )
+        client = SlackClient(webhook_url="https://hooks.slack.com/services/test", http_client=http)
         result = await client.post({"text": "hello"})
         assert result is True
         http.post.assert_called_once()
@@ -220,9 +214,7 @@ class TestSlackClientConfigured:
     @pytest.mark.asyncio
     async def test_post_alert_builds_block_kit_payload(self):
         http = _make_http_client()
-        client = SlackClient(
-            webhook_url="https://hooks.slack.com/services/test", http_client=http
-        )
+        client = SlackClient(webhook_url="https://hooks.slack.com/services/test", http_client=http)
         await client.post_alert(
             customer_id="usr_123",
             state="billing_issue",
@@ -240,9 +232,7 @@ class TestSlackClientConfigured:
     @pytest.mark.asyncio
     async def test_post_alert_red_emoji_for_high_risk(self):
         http = _make_http_client()
-        client = SlackClient(
-            webhook_url="https://hooks.slack.com/services/test", http_client=http
-        )
+        client = SlackClient(webhook_url="https://hooks.slack.com/services/test", http_client=http)
         await client.post_alert(
             customer_id="usr_x",
             state="active",
@@ -257,9 +247,7 @@ class TestSlackClientConfigured:
     @pytest.mark.asyncio
     async def test_post_alert_yellow_emoji_for_medium_risk(self):
         http = _make_http_client()
-        client = SlackClient(
-            webhook_url="https://hooks.slack.com/services/test", http_client=http
-        )
+        client = SlackClient(webhook_url="https://hooks.slack.com/services/test", http_client=http)
         await client.post_alert(
             customer_id="usr_x",
             state="active",
@@ -325,9 +313,7 @@ class TestDispatcherRouting:
         slack_http = _make_http_client()
         dispatcher = _make_dispatcher(resend_http=resend_http, slack_http=slack_http)
 
-        sub = _make_subscriber(
-            state=SubscriberState.BILLING_ISSUE, billing_failure_count=2
-        )
+        sub = _make_subscriber(state=SubscriberState.BILLING_ISSUE, billing_failure_count=2)
         rec = _make_recommendation(
             action=ActionType.SEND_BILLING_FAILURE_ALERT,
             urgency=Urgency.IMMEDIATE,
@@ -406,9 +392,7 @@ class TestDispatcherRouting:
         dispatcher = _make_dispatcher(resend_http=resend_http, slack_http=slack_http)
 
         sub = _make_subscriber(app_user_id=None, state=SubscriberState.CHURNED)
-        rec = _make_recommendation(
-            action=ActionType.SEND_WINBACK_OFFER, urgency=Urgency.SOON
-        )
+        rec = _make_recommendation(action=ActionType.SEND_WINBACK_OFFER, urgency=Urgency.SOON)
 
         result = await dispatcher.dispatch(sub, rec, risk_score=60.0)
 
@@ -458,9 +442,7 @@ class TestDispatcherRouting:
         dispatcher = _make_dispatcher(resend_http=resend_http, slack_http=slack_http)
 
         sub = _make_subscriber(state=SubscriberState.ACTIVE)
-        rec = _make_recommendation(
-            action=ActionType.SEND_ENGAGEMENT_CHECKIN, urgency=Urgency.SOON
-        )
+        rec = _make_recommendation(action=ActionType.SEND_ENGAGEMENT_CHECKIN, urgency=Urgency.SOON)
 
         result = await dispatcher.dispatch(sub, rec, risk_score=55.0)
 
@@ -474,9 +456,7 @@ class TestDispatcherRouting:
         dispatcher = _make_dispatcher(resend_http=resend_http, slack_http=slack_http)
 
         sub = _make_subscriber(state=SubscriberState.ACTIVE)
-        rec = _make_recommendation(
-            action=ActionType.SEND_RENEWAL_REMINDER, urgency=Urgency.MONITOR
-        )
+        rec = _make_recommendation(action=ActionType.SEND_RENEWAL_REMINDER, urgency=Urgency.MONITOR)
 
         result = await dispatcher.dispatch(sub, rec, risk_score=35.0)
 

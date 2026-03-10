@@ -152,7 +152,8 @@ class TestTrialingSubscriber:
         result = rec.recommend(sub, _score(65.0))
         nudge = next(
             (
-                r for r in result.recommendations
+                r
+                for r in result.recommendations
                 if r.action == ActionType.SEND_TRIAL_CONVERSION_NUDGE
             ),
             None,

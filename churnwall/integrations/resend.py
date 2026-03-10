@@ -25,8 +25,8 @@ RESEND_API_URL = "https://api.resend.com/emails"
 class EmailMessage:
     to: str
     subject: str
-    text: str          # Plain-text fallback (always required)
-    html: str | None = None   # Optional HTML version
+    text: str  # Plain-text fallback (always required)
+    html: str | None = None  # Optional HTML version
 
 
 class ResendClient:
@@ -98,6 +98,7 @@ class ResendClient:
 # ── Email templates ──────────────────────────────────────────────────────────
 # Each template takes subscriber context and returns an EmailMessage.
 # Keep them honest: no marketing fluff, just clear information.
+
 
 def billing_failure_alert(
     to: str,
