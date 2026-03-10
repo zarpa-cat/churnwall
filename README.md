@@ -111,6 +111,33 @@ async with RCClient(api_key="sk_...") as client:
     subscriber, created = await sync_subscriber(client, "usr_abc", "proj_xyz", session)
 ```
 
+## Webhook Authorization
+
+Churnwall verifies that webhooks actually come from RevenueCat. Set a secret in your RC dashboard (Project Settings → Webhooks → Authorization header), then configure churnwall to match:
+
+```bash
+RC_WEBHOOK_AUTH_KEY=your_webhook_secret
+```
+
+When set, every `/webhook` POST is checked against the `Authorization` header using constant-time comparison. If unset, auth is skipped (useful for local dev without an ngrok tunnel). Wrong or missing auth → `401 Unauthorized`.
+
+## Health Check
+
+```bash
+GET /health → {"status": "ok", "service": "churnwall"}
+```
+
+## Deployment
+
+Docker Compose:
+
+```bash
+# Copy .env.example → .env, fill in your keys
+docker compose up -d
+```
+
+The compose file wires up all env variables and mounts a volume for the SQLite database. Swap in a `DATABASE_URL` pointing to Postgres for production.
+
 ## Status
 
 - ✅ Phase 1: State machine + webhook receiver (28 tests)
@@ -120,6 +147,7 @@ async with RCClient(api_key="sk_...") as client:
 - ✅ Phase 3: Integrations — Resend + Slack (35 tests, 138 total)
 - ✅ Phase 4: CLI — subscribers, recommend, score, cohort (153 tests)
 - ✅ Phase 5: RC API Sync — backfill + seed from live RC data (180 tests)
+- ✅ Hardening: Webhook auth + health check + Docker (185 tests)
 
 See [GitHub Issues](https://github.com/zarpa-cat/churnwall/issues) for roadmap.
 
