@@ -1,0 +1,53 @@
+services:
+  churnwall:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Database — use postgres in production, sqlite in dev
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///churnwall.db}
+
+      # RevenueCat — required for sync and webhook auth
+      - RC_API_KEY=${RC_API_KEY:-}
+      - RC_PROJECT_ID=${RC_PROJECT_ID:-}
+
+      # Webhook authorization — set to match your RC dashboard webhook secret
+      # Leave unset to skip auth check (local dev only)
+      - RC_WEBHOOK_AUTH_KEY=${RC_WEBHOOK_AUTH_KEY:-}
+
+      # Resend (email notifications)
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-churnwall@example.com}
+
+      # Slack (alerts for immediate-urgency events)
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+      - SLACK_ALERTS_ENABLED=${SLACK_ALERTS_ENABLED:-true}
+
+    volumes:
+      # Persist the SQLite database between restarts (dev only)
+      # In production, use DATABASE_URL pointing to Postgres instead
+      - churnwall_data:/app/churnwall.db
+
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Uncomment to add Postgres for production
+  # postgres:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_DB: churnwall
+  #     POSTGRES_USER: churnwall
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+volumes:
+  churnwall_data:
+  # postgres_data:

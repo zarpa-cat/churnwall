@@ -2,19 +2,27 @@
 
 Parses RevenueCat webhook payloads and applies them to the subscriber state machine.
 Reference: https://www.revenuecat.com/docs/integrations/webhooks/event-types-and-fields
+
+Authorization: RevenueCat supports a shared-secret webhook authorization scheme.
+Set a secret in the RC dashboard (Project Settings → Webhooks → Authorization header),
+then set RC_WEBHOOK_AUTH_KEY to the same value. Churnwall will reject any webhook
+that doesn't present that secret in the Authorization header. If RC_WEBHOOK_AUTH_KEY
+is unset, the check is skipped (useful for local dev without an ngrok tunnel).
 """
 
 from __future__ import annotations
 
 import logging
+import secrets
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 
 from churnwall.db import get_db
 from churnwall.models import RCEventType
+from churnwall.settings import settings
 from churnwall.state_machine import state_machine
 
 logger = logging.getLogger(__name__)
@@ -63,12 +71,35 @@ def _ms_to_datetime(ms: int | None) -> datetime | None:
     return datetime.fromtimestamp(ms / 1000, tz=timezone.utc).replace(tzinfo=None)
 
 
+def _verify_webhook_auth(authorization: str | None) -> None:
+    """Verify the RC webhook Authorization header.
+
+    RC sends the raw secret you configured in the dashboard as the Authorization
+    header value (no "Bearer" prefix). If RC_WEBHOOK_AUTH_KEY is not set we skip
+    the check (dev mode). Uses a constant-time comparison to prevent timing attacks.
+
+    Raises HTTPException(401) if the secret is wrong or missing when required.
+    """
+    expected = settings.revenuecat_webhook_auth_key
+    if not expected:
+        return  # auth not configured — dev mode, skip check
+
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+    if not secrets.compare_digest(authorization.encode(), expected.encode()):
+        raise HTTPException(status_code=401, detail="Invalid Authorization header")
+
+
 @router.post("/webhook")
 async def receive_webhook(
     request: Request,
     db: Session = Depends(get_db),
+    authorization: str | None = Header(default=None),
 ) -> dict:
     """Receive and process a RevenueCat webhook event."""
+    _verify_webhook_auth(authorization)
+
     try:
         body = await request.json()
     except Exception:

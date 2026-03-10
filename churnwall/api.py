@@ -20,9 +20,19 @@ from churnwall.recommender import RetentionRecommender
 from churnwall.scorer import ChurnRiskScorer
 
 router = APIRouter(prefix="/api", tags=["subscribers"])
+health_router = APIRouter(tags=["health"])
 
 _scorer = ChurnRiskScorer()
 _recommender = RetentionRecommender()
+
+
+# ── Health check ──────────────────────────────────────────────────────────────
+
+
+@health_router.get("/health")
+def health_check() -> dict:
+    """Health check endpoint. Returns 200 when the service is up."""
+    return {"status": "ok", "service": "churnwall"}
 
 
 # ── Pydantic response schemas ─────────────────────────────────────────────────

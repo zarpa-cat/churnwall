@@ -150,3 +150,44 @@ def test_missing_customer_id_returns_422(client):
     del payload["event"]["original_app_user_id"]
     resp = client.post("/webhook", json=payload)
     assert resp.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# Webhook authorization
+# ---------------------------------------------------------------------------
+
+
+def test_auth_skipped_when_key_not_configured(client, monkeypatch):
+    """When RC_WEBHOOK_AUTH_KEY is unset, any (or no) auth header is accepted."""
+    monkeypatch.delenv("RC_WEBHOOK_AUTH_KEY", raising=False)
+    resp = client.post("/webhook", json=_purchase_payload())
+    assert resp.status_code == 200
+
+
+def test_auth_accepted_with_correct_key(client, monkeypatch):
+    """Correct Authorization header is accepted."""
+    monkeypatch.setenv("RC_WEBHOOK_AUTH_KEY", "supersecret")
+    resp = client.post(
+        "/webhook",
+        json=_purchase_payload(),
+        headers={"Authorization": "supersecret"},
+    )
+    assert resp.status_code == 200
+
+
+def test_auth_rejected_with_wrong_key(client, monkeypatch):
+    """Wrong Authorization header returns 401."""
+    monkeypatch.setenv("RC_WEBHOOK_AUTH_KEY", "supersecret")
+    resp = client.post(
+        "/webhook",
+        json=_purchase_payload(),
+        headers={"Authorization": "wrongsecret"},
+    )
+    assert resp.status_code == 401
+
+
+def test_auth_rejected_when_header_missing(client, monkeypatch):
+    """Missing Authorization header returns 401 when key is configured."""
+    monkeypatch.setenv("RC_WEBHOOK_AUTH_KEY", "supersecret")
+    resp = client.post("/webhook", json=_purchase_payload())
+    assert resp.status_code == 401

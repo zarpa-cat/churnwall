@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from churnwall.api import health_router
 from churnwall.api import router as api_router
 from churnwall.db import init_db
 from churnwall.webhook import router as webhook_router
@@ -24,6 +25,7 @@ def create_app() -> FastAPI:
         version="0.1.0",
         lifespan=lifespan,
     )
+    app.include_router(health_router)
     app.include_router(webhook_router)
     app.include_router(api_router)
     return app
