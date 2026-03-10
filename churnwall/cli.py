@@ -20,6 +20,7 @@ from churnwall.db import SessionLocal, init_db
 from churnwall.models import RCEventType, Subscriber, SubscriberEvent, SubscriberState
 from churnwall.recommender import RetentionRecommender
 from churnwall.scorer import ChurnRiskScorer
+from churnwall.settings import settings
 
 app = typer.Typer(
     name="churnwall",
@@ -272,5 +273,87 @@ def billing_failures(
             )
 
         typer.echo()
+    finally:
+        session.close()
+
+
+# ── sync ──────────────────────────────────────────────────────────────────────
+
+
+@app.command("sync")
+def sync_cmd(
+    customer_id: Optional[str] = typer.Option(
+        None, "--customer-id", help="Sync a single subscriber by app user ID"
+    ),
+    from_file: Optional[str] = typer.Option(
+        None, "--from-file", help="Path to a text file of app user IDs (one per line)"
+    ),
+    project_id: Optional[str] = typer.Option(
+        None, "--project", help="Project ID to tag synced subscribers with"
+    ),
+    api_key: Optional[str] = typer.Option(
+        None, "--api-key", help="RC secret API key (falls back to RC_API_KEY env var)"
+    ),
+) -> None:
+    """Seed or refresh subscriber data from the RevenueCat API.
+
+    Pulls live subscription state from RC and upserts it into the local
+    churnwall DB. Useful for backfilling before you have webhook history, or
+    refreshing stale records.
+
+    Examples:
+        churnwall sync --customer-id usr_abc123
+        churnwall sync --from-file ids.txt --project proj_xyz
+    """
+    import asyncio as _asyncio
+
+    from churnwall.rc_client import RCClient
+    from churnwall.sync import sync_from_file, sync_subscriber
+
+    key = api_key or settings.rc_api_key
+    if not key:
+        typer.echo(
+            typer.style(
+                "No RC API key. Set RC_API_KEY env var or pass --api-key.",
+                fg="red",
+            )
+        )
+        raise typer.Exit(1)
+
+    proj = project_id or settings.rc_project_id or "default"
+    session = _get_session()
+
+    try:
+        if customer_id:
+            # Single subscriber sync
+            async def _single() -> None:
+                async with RCClient(api_key=key) as client:
+                    sub, created = await sync_subscriber(client, customer_id, proj, session)
+                    action = typer.style("created", fg="green") if created else "updated"
+                    typer.echo(
+                        f"Subscriber {sub.customer_id!r} {action}  "
+                        f"state={sub.state.value}  "
+                        f"risk={sub.risk_score:.0f}"
+                        if sub.risk_score is not None
+                        else f"Subscriber {sub.customer_id!r} {action}  state={sub.state.value}"
+                    )
+
+            _asyncio.run(_single())
+
+        elif from_file:
+            result = sync_from_file(from_file, proj, api_key=key)
+            typer.echo(
+                f"\nSync complete: "
+                f"{typer.style(str(result.created), fg='green')} created, "
+                f"{result.updated} updated, "
+                f"{result.skipped} skipped, "
+                f"{len(result.errors)} errors."
+            )
+            for err in result.errors:
+                typer.echo(typer.style(f"  ✗ {err}", fg="red"))
+
+        else:
+            typer.echo("Provide --customer-id or --from-file. See --help.")
+            raise typer.Exit(1)
     finally:
         session.close()

@@ -37,6 +37,15 @@ class Settings:
         val = os.environ.get("SLACK_ALERTS_ENABLED", "true").lower()
         return val in ("1", "true", "yes")
 
+    # ── RevenueCat API ───────────────────────────────────────────────────────
+    @property
+    def rc_api_key(self) -> str | None:
+        return os.environ.get("RC_API_KEY")
+
+    @property
+    def rc_project_id(self) -> str | None:
+        return os.environ.get("RC_PROJECT_ID")
+
     # ── Churnwall ─────────────────────────────────────────────────────────────
     @property
     def churnwall_base_url(self) -> str:

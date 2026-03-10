@@ -82,15 +82,44 @@ dispatcher = IntegrationDispatcher.from_settings(settings, app_name="MyApp")
 await dispatcher.dispatch(subscriber, recommendation, risk_score=87.5)
 ```
 
-## Status
+## RC API Sync (Phase 5)
 
-All phases complete.
+Churnwall can seed its DB directly from the RevenueCat API — no webhook history replay needed.
+
+```bash
+# Sync a single subscriber
+churnwall sync --customer-id usr_abc123
+
+# Bulk sync from a file (one app_user_id per line)
+churnwall sync --from-file subscriber_ids.txt --project proj_xyz
+```
+
+Configure with:
+```bash
+RC_API_KEY=sk_your_secret_key
+RC_PROJECT_ID=proj_your_project_id   # optional default project
+```
+
+Sync derives state from live RC subscription data (active/trialing/billing_issue/churned/reactivated), computes a risk score, and upserts the record — preserving any richer history already tracked from webhooks.
+
+**Python API:**
+```python
+from churnwall.rc_client import RCClient
+from churnwall.sync import sync_subscriber
+
+async with RCClient(api_key="sk_...") as client:
+    subscriber, created = await sync_subscriber(client, "usr_abc", "proj_xyz", session)
+```
+
+## Status
 
 - ✅ Phase 1: State machine + webhook receiver (28 tests)
 - ✅ Phase 2a: Churn risk scorer (24 tests)
 - ✅ Phase 2b: Recommendation engine (25 tests)
 - ✅ Phase 2c: REST API (26 tests)
 - ✅ Phase 3: Integrations — Resend + Slack (35 tests, 138 total)
+- ✅ Phase 4: CLI — subscribers, recommend, score, cohort (153 tests)
+- ✅ Phase 5: RC API Sync — backfill + seed from live RC data (180 tests)
 
 See [GitHub Issues](https://github.com/zarpa-cat/churnwall/issues) for roadmap.
 
